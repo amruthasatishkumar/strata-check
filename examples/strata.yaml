@@ -1,0 +1,18 @@
+# Synthetic example: a student-enrolment table an AI advising agent would read.
+sources:
+  - name: enrolments
+    path: data/enrolments.csv
+    owner: registrar-data-team
+    system_of_record: student-information-system
+    id_column: student_id
+    updated_column: updated_at
+    freshness_sla_hours: 24
+    upstream: [sis.enrolments_raw]
+    columns:
+      student_id: {description: Pseudonymous student identifier}
+      course: {description: Course code}
+      attendance_rate: {description: Share of sessions attended, unit: fraction}
+      avg_grade: {description: Mean graded score to date}
+audit:
+  eval_set: evals/questions.jsonl
+  last_eval_run: 2026-10-10
