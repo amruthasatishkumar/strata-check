@@ -24,7 +24,3 @@ Python CLI and library for scoring data against the six STRATA dimensions before
 - Keep credentials, virtual environments, build output, and generated scorecards out of Git.
 - Preserve the synthetic examples and MIT license. Do not add customer data.
 - Do not use em dashes in written content.
-
-## External tools
-
-Local development does not require MCP tools or cloud credentials. If explicitly needed, use the Microsoft corporate account for WorkIQ, MSX, and Power BI, and the external account for Azure resource management.
