@@ -14,6 +14,7 @@ dependencies = ["pandas>=2.0", "pyyaml>=6.0"]
 
 [project.optional-dependencies]
 parquet = ["pyarrow>=14"]
+fabric = ["deltalake>=0.18", "pyarrow>=14"]
 dev = ["pytest>=8"]
 
 [project.scripts]

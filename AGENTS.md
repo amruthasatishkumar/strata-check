@@ -11,7 +11,7 @@ Python CLI and library for scoring data against the six STRATA dimensions before
 
 ## Commands
 
-- Install for development: `python -m pip install -e ".[dev]"`.
+- Install for development: `python -m pip install -e ".[dev,fabric]"`.
 - Run the example: `strata-check examples/strata.yaml -o scorecard.md`.
 - Test: `python -m pytest`.
 - CI tests Python 3.10 and 3.12 using `.github/workflows/ci.yml`.
