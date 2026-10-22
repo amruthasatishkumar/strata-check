@@ -22,7 +22,7 @@ Example:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +44,8 @@ class SourceSpec:
     freshness_sla_hours: float | None = None
     upstream: list[str] = field(default_factory=list)
     columns: dict[str, ColumnSpec] = field(default_factory=dict)
+    # Set by connectors from table metadata (e.g. the Delta log), not usually by hand.
+    last_modified: datetime | None = None
 
 
 @dataclass

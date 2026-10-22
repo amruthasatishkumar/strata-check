@@ -110,26 +110,32 @@ def ambiguous_names(src: SourceSpec, df: pd.DataFrame) -> list[CheckResult]:
 # ---------------- Timely ----------------
 
 def freshness(src: SourceSpec, df: pd.DataFrame, now: datetime | None = None) -> list[CheckResult]:
-    if not src.updated_column or src.updated_column not in df:
+    now = now or datetime.now(timezone.utc)
+    if src.updated_column and src.updated_column in df:
+        latest = pd.to_datetime(df[src.updated_column], utc=True, errors="coerce").max()
+        if pd.isna(latest):
+            return [CheckResult(Dimension.TIMELY, "freshness", src.name, 0.0,
+                                f"{src.updated_column} has no parseable timestamps", "Fix the timestamp column")]
+        latest, what = latest.to_pydatetime(), "Newest row"
+    elif src.last_modified is not None:
+        # Table-level write time (e.g. from the Delta log): weaker than a row timestamp,
+        # since a rewrite of stale data still counts as fresh.
+        latest, what = src.last_modified, "Last table write"
+    else:
         return [CheckResult(Dimension.TIMELY, "freshness", src.name, 0.0,
                             "No updated_column, so freshness can't be measured",
                             "Declare a last-updated timestamp column")]
-    now = now or datetime.now(timezone.utc)
-    latest = pd.to_datetime(df[src.updated_column], utc=True, errors="coerce").max()
-    if pd.isna(latest):
-        return [CheckResult(Dimension.TIMELY, "freshness", src.name, 0.0,
-                            f"{src.updated_column} has no parseable timestamps", "Fix the timestamp column")]
-    age_h = (now - latest.to_pydatetime()).total_seconds() / 3600
+    age_h = (now - latest).total_seconds() / 3600
     if src.freshness_sla_hours is None:
         return [CheckResult(Dimension.TIMELY, "freshness", src.name, 50.0,
-                            f"Newest row is {age_h:.1f} h old; no SLA declared",
+                            f"{what} is {age_h:.1f} h old; no SLA declared",
                             "Declare freshness_sla_hours so staleness can be judged")]
     sla = src.freshness_sla_hours
     # Full marks inside the SLA, falling linearly to 0 at 3x the SLA.
     score = 100.0 if age_h <= sla else max(0.0, 100.0 * (1 - (age_h - sla) / (2 * sla)))
     return [CheckResult(
         Dimension.TIMELY, "freshness", src.name, round(score, 1),
-        f"Newest row is {age_h:.1f} h old against a {sla:g} h SLA",
+        f"{what} is {age_h:.1f} h old against a {sla:g} h SLA",
         None if age_h <= sla else "Refresh the source or relax the SLA deliberately",
     )]
 
